@@ -191,3 +191,6 @@ Checklist de pronto:
 
 ## 13) Documento complementar
 - Taxonomia e tags de conteudo: `docs/TAXONOMIA-TAGS-CONTENT.md`
+- Arquitetura MVP + evolucao AWS: `docs/ARQUITETURA-EVOLUCAO-AWS.md`
+- Plano de time + arquitetura AWS e AI: `docs/PLANO-TIME-E-ARQUITETURA-AWS-AI.md`
+- Plano de sprints do time: `docs/PLANO-SPRINTS-TIME.md`
