@@ -5,6 +5,7 @@ PROD_IMAGE ?= fatec-vue-prod
 
 DEV_CONTAINER ?= fatec-vue-dev
 PROD_CONTAINER ?= fatec-vue-prod
+DEV_NODE_MODULES_VOLUME ?= fatec-vue-node-modules
 
 DEV_PORT ?= 5173
 PROD_PORT ?= 8080
@@ -48,7 +49,7 @@ run-dev: stop-dev build-dev
 		-e CHOKIDAR_INTERVAL=$(CHOKIDAR_INTERVAL) \
 		-p $(DEV_PORT):5173 \
 		-v "$(PROJECT_DIR):/app" \
-		-v /app/node_modules \
+		-v $(DEV_NODE_MODULES_VOLUME):/app/node_modules \
 		$(DEV_IMAGE)
 
 stop-dev:
