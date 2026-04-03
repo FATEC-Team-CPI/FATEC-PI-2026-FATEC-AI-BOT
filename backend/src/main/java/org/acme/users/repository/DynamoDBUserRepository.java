@@ -30,6 +30,7 @@ public class DynamoDBUserRepository implements IUserRepository {
     public void save(User admin) throws Exception {
         logger.debug("Salvando admin no DynamoDB: {}", admin.sk());
         
+        // construir mapa de atributos para o item DynamoDB
         Map<String, AttributeValue> item = new HashMap<>();
         item.put("pk", AttributeValue.builder().s(admin.pk()).build());
         item.put("sk", AttributeValue.builder().s(admin.sk()).build());
@@ -45,10 +46,16 @@ public class DynamoDBUserRepository implements IUserRepository {
         item.put("gsi1pk", AttributeValue.builder().s("AUTH#EMAIL").build());
         item.put("gsi1sk", AttributeValue.builder().s(admin.sk()).build());
         
+
+        // construir comando PutItem para salvar a entidade no DynamoDB
         PutItemRequest request = PutItemRequest.builder()
             .tableName(TABLE_NAME)
             .item(item)
             .build();
+        
+
+        // salva a entidade no DynamoDB
+
         
         dynamodb.putItem(request);
         logger.info("Admin salvo com sucesso: {}", admin.sk());

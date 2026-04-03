@@ -94,7 +94,6 @@ public class UserService implements IUserService {
     
     private CreateUserResponse toCreateUserResponse(User admin) {
         return new CreateUserResponse(
-            admin.pk(),
             admin.sk(),
             admin.name(),
             admin.role(),
@@ -103,4 +102,6 @@ public class UserService implements IUserService {
             admin.updatedAt()
         );
     }
+
+    
 }

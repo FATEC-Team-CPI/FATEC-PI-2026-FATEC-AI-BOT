@@ -17,6 +17,7 @@ public interface IUserService {
      * @throws IllegalArgumentException se email já existe
      */
     CreateUserResponse cadastrar(CreateUserRequest request) throws Exception;
+    //
     
     /**
      * Caso de uso: Buscar admin por email
@@ -24,6 +25,8 @@ public interface IUserService {
      * @return response com dados do admin ou lança exceção
      */
     CreateUserResponse buscarPorEmail(String email) throws Exception;
+
+    // caso de uso: login
     
 
 }

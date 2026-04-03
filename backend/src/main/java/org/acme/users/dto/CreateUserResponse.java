@@ -6,11 +6,8 @@ import java.time.Instant;
 
 @Schema(name = "Response", description = "Resposta com dados do administrador")
 public record CreateUserResponse(
-    @Schema(description = "ID/Chave da unidade", examples = "FatecItaquera#users")
-    String pk,
-    
     @Schema(description = "Email do administrador", examples = "admin@fatec.com")
-    String sk,
+    String email,
     
     @Schema(description = "Nome do administrador", examples = "João Silva")
     String name,

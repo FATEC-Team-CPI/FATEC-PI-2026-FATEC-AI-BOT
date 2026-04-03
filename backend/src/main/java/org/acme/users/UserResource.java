@@ -32,12 +32,13 @@ public class UserResource {
     
     @Inject
     IUserService service;
-         
+
     /**
      * POST /admin
      * Cria um novo administrador
      */
     @POST
+    @Path("/create")
     @Operation(summary = "Criar novo administrador", description = "Cria um novo administrador da plataforma")
     @APIResponse(responseCode = "201", description = "Admin criado com sucesso",
         content = @Content(mediaType = "application/json", schema = @Schema(implementation = CreateUserResponse.class)))
@@ -50,8 +51,14 @@ public class UserResource {
 
 
             CreateUserResponse response = service.cadastrar(request);    
+
+
             return Response.status(Response.Status.CREATED).entity(response).build();
         
+
+
+
+
         } catch (IllegalArgumentException e) {
             logger.warn("Erro ao criar admin: {}", e.getMessage());
             return Response.status(Response.Status.CONFLICT)
@@ -93,4 +100,11 @@ public class UserResource {
                 .build();
         }
     }
+
+
+    // criar metodo de login
+
+    // criar metodo de logout
+
+    // criar metodo de autenticação de token
 }
