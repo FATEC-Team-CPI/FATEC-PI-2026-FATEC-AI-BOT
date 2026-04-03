@@ -15,10 +15,12 @@ public interface IUserRepository {
      * Salva um novo administrador
      */
     void save(User admin) throws Exception;
+    // public void save(User admin) throws Exception
     
     /**
      * Busca um administrador por email
      */
     Optional<User> findByEmail(String email) throws Exception;
 
+    
 }

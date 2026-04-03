@@ -9,15 +9,20 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 public record CreateUserRequest(
     @Schema(description = "Nome da unidade FATEC", examples = "FatecItaquera")
     @NotBlank(message = "Unidade não pode estar vazia")
+
+
     String unidade,
     
     @Schema(description = "Email do administrador", examples = "admin@fatec.com")
     @NotBlank(message = "Email não pode estar vazio")
     @Email(message = "Email deve ser válido")
+
+
     String email,
     
     @Schema(description = "Nome completo do administrador", examples = "João Silva")
     @NotBlank(message = "Nome não pode estar vazio")
+    
     String name,
     
     @Schema(description = "Senha (será hashada)", examples = "Senha@123")

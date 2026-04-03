@@ -16,6 +16,9 @@ public record User(
     Instant createdAt,
     Instant updatedAt
 ) {
+
+
+    
     // Factory method para criar novo user
     public static User criar(String unidade, String email, String name, String passwordHash, String role) {
         return new User(
