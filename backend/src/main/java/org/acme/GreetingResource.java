@@ -1,5 +1,6 @@
 package org.acme;
 
+
 import java.time.Instant;
 
 import jakarta.ws.rs.Consumes;
@@ -18,6 +19,8 @@ public class GreetingResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
+        
+
         return "Helloooooooow from Quarkus REST";
     }
 
@@ -30,4 +33,6 @@ public class GreetingResource {
     //         : "Hello, World!";
     //     return new GreetingResponse(message, Instant.now());
     // }
+
+
 }
