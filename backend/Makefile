@@ -99,7 +99,7 @@ prod-logs:
 	docker logs -f $(PROD_CONTAINER)
 
 localstack-up:
-	docker compose up -d
+	docker compose up -d --build
 
 localstack-down:
 	docker compose down

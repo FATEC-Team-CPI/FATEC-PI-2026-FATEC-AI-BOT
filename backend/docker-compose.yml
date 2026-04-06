@@ -1,9 +1,10 @@
 services:
   localstack:
-    image: localstack/localstack:3.8
+    image: localstack/localstack-pro
     container_name: localstack
     ports:
       - "4566:4566"
+    env_file: .env
     environment:
       - SERVICES=dynamodb
       - AWS_DEFAULT_REGION=us-east-1
