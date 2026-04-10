@@ -1,14 +1,21 @@
 package org.acme.users.service;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import org.acme.users.dto.CreateUserRequest;
 import org.acme.users.dto.CreateUserResponse;
+import org.acme.users.dto.TokenUserRequest;
+import org.acme.users.dto.TokenUserResponse;
 import org.acme.users.model.User;
 import org.acme.users.repository.IUserRepository;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +33,10 @@ public class UserService implements IUserService {
     
     @Inject
     IUserRepository repository;
+
+    @Inject
+    JsonWebToken jwt;
+
     
     /**
      * Caso de uso: Criar novo administrador
@@ -66,6 +77,27 @@ public class UserService implements IUserService {
         return repository.findByEmail(email)
             .map(this::toCreateUserResponse)
             .orElseThrow(() -> new IllegalArgumentException("Admin não encontrado: " + email));
+    }
+
+
+    @Override
+    @RolesAllowed("admin")
+    public TokenUserResponse validarToken(TokenUserRequest token) throws Exception{
+        logger.info("Validando token: {}", token);
+
+        try {
+            Instant tokenResponseHrLimite = Instant.now().plusSeconds(7200);
+            return new TokenUserResponse("Token válido", tokenResponseHrLimite);
+
+            // String subject = jwt.getSubject(); // usuário
+            // Instant exp = parseInstant(jwt.getExpirationTime());
+
+
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+            //cria objeto throw a partir da classe exeception e retorna a mensagem de erro
+        }        
+
     }
     
     
