@@ -7,6 +7,8 @@ import jakarta.ws.rs.core.Response;
 
 import org.acme.users.dto.CreateUserRequest;
 import org.acme.users.dto.CreateUserResponse;
+import org.acme.users.dto.TokenUserRequest;
+import org.acme.users.dto.TokenUserResponse;
 import org.acme.users.service.IUserService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -107,4 +109,40 @@ public class UserResource {
     // criar metodo de logout
 
     // criar metodo de autenticação de token
+    @GET
+    @Path("auth/token")
+    @Operation(summary = "Validar token JWT", description = "Retorna se token válido e tempo de expiração")
+    @APIResponse(responseCode = "200", description = "Token válidado",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = TokenUserResponse.class)))
+    @APIResponse(responseCode = "404", description = "Token inválido")
+    public Response validarToken(@HeaderParam("Authorization") String token){
+        //header apenas recebe string
+        try {
+            logger.info("Validando token: {}", token);
+
+            TokenUserRequest tokenRequest = new TokenUserRequest(token);
+            //trasformo o token que recebi no seu dto request, que é string tambem
+
+            TokenUserResponse tokenResponse = service.validarToken(tokenRequest);
+            //envio o request (string) pro service e trasformo ele em response
+
+            return Response.status(Response.Status.OK) //statuys ok -> sucesso
+                .entity(tokenResponse) //corpo da resposta vai ser em token response
+                .build(); //constroi o objeto response + status
+             
+
+       } catch (IllegalArgumentException e) {
+            logger.warn("Credenciais de token não encontrado: {}", token);
+            return Response.status(Response.Status.NOT_FOUND)
+                .entity(Map.of("error", e.getMessage()))
+                .build();
+        
+            } catch (Exception e) {
+            logger.error("Erro ao validar token", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(Map.of("error", "Token inválido ou vazio."))
+                .build();
+        }
+    }
+
 }

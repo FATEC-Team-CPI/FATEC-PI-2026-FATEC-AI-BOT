@@ -50,17 +50,18 @@ dev-image:
 	docker build -f Dockerfile.dev -t $(DEV_IMAGE) .
 
 dev-up: dev-image
+	docker network create fatec-network 2>/dev/null || true
 	docker run --rm -it \
-		--name $(DEV_CONTAINER) \
-		--network fatec-network \
-		-p 8080:8080 \
-		-p 5005:5005 \
-		-e QUARKUS_DEVSERVICES_ENABLED=false \
-		-e QUARKUS_DYNAMODB_ENDPOINT_OVERRIDE=http://localstack:4566 \
-		-v "$(HOST_WORKSPACE):/workspace" \
-		-v "$(M2_DIR):/root/.m2" \
-		-w /workspace \
-		$(DEV_IMAGE)
+	--name $(DEV_CONTAINER) \
+	--network fatec-network \
+	-p 8081:8080 \
+	-p 5005:5005 \
+	-e QUARKUS_DEVSERVICES_ENABLED=false \
+	-e QUARKUS_DYNAMODB_ENDPOINT_OVERRIDE=http://localstack:4566 \
+	-v "$(HOST_WORKSPACE):/workspace" \
+	-v "$(M2_DIR):/root/.m2" \
+	-w /workspace \
+	$(DEV_IMAGE)
 
 dev-shell: dev-image
 	docker run --rm -it \
@@ -89,7 +90,7 @@ prod-up: prod-image
 	-@docker rm -f $(PROD_CONTAINER) >$(NULL_DEV) 2>&1
 	docker run -d \
 		--name $(PROD_CONTAINER) \
-		-p 8080:8080 \
+		-p 8081:8080 \
 		$(PROD_IMAGE)
 
 prod-down:

@@ -2,6 +2,8 @@ package org.acme.users.service;
 
 import org.acme.users.dto.CreateUserRequest;
 import org.acme.users.dto.CreateUserResponse;
+import org.acme.users.dto.TokenUserRequest;
+import org.acme.users.dto.TokenUserResponse;
 
 /**
  * Service Interface: Contrato da camada de negócio
@@ -26,7 +28,13 @@ public interface IUserService {
      */
     CreateUserResponse buscarPorEmail(String email) throws Exception;
 
-    // caso de uso: login
-    
+    /**
+     * Caso de uso: Validar token
+     * @param token dados do token
+     * @return response com dados do token e tempo de validado do token
+     * @throws IllegalArgumentException se token invalido
+     */
+    TokenUserResponse validarToken(TokenUserRequest token) throws Exception;
+    //comentarios são importantes para documentacao
 
 }
