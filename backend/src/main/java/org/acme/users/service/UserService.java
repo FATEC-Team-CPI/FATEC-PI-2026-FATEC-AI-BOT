@@ -38,13 +38,32 @@ public class UserService implements IUserService {
     JsonWebToken jwt;
 
     
+    private void validateCreateUserRequest(CreateUserRequest request) {
+        if (request.email() == null || request.email().isBlank()) {
+            throw new IllegalArgumentException("Email é obrigatório");
+        }
+        if (request.password() == null || request.password().isBlank()) {
+            throw new IllegalArgumentException("Senha é obrigatória");
+        }
+        if (request.name() == null || request.name().isBlank()) {
+            throw new IllegalArgumentException("Nome é obrigatório");
+        }
+        if (request.role() == null || request.role().isBlank()) {
+            throw new IllegalArgumentException("Role é obrigatória");
+        }
+        if (!request.role().equals("SUPER_ADMIN") && !request.role().equals("EDITOR")) {
+            throw new IllegalArgumentException("Role inválida: " + request.role());
+        }
+    }
+
     /**
      * Caso de uso: Criar novo administrador
      */
     @Override
     public CreateUserResponse cadastrar(CreateUserRequest request) throws Exception {
         logger.info("Iniciando criação de admin para: {}", request.email());
-        
+        validateCreateUserRequest(request);
+
         // 1. Verificar se já existe
         Optional<User> existente = repository.findByEmail(request.email());
         if (existente.isPresent()) {
