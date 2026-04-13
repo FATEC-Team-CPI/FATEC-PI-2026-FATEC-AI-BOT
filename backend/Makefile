@@ -27,10 +27,11 @@ NULL_DEV := /dev/null
 MVNW := ./mvnw
 endif
 
-.PHONY: help dev-image dev-up dev-shell dev-down build-artifacts prod-image prod-up prod-down prod-logs localstack-up localstack-down localstack-logs localstack-tables clean-target
+.PHONY: help generate-keys dev-image dev-up dev-shell dev-down build-artifacts prod-image prod-up prod-down prod-logs localstack-up localstack-down localstack-logs localstack-tables clean-target
 
 help:
 	@echo "Targets available:"
+	@echo "  make generate-keys    Generate JWT RSA keys (private/public) for signing"
 	@echo "  make dev-image        Build development image"
 	@echo "  make dev-up           Run Quarkus in dev mode (hot reload)"
 	@echo "  make dev-shell        Open shell in dev image with project mounted"
@@ -46,11 +47,25 @@ help:
 	@echo "  make localstack-tables List DynamoDB tables in LocalStack"
 	@echo "  make clean-target     Remove local target directory"
 
+generate-keys:
+	docker run --rm \
+		-v "$(HOST_WORKSPACE):/workspace" \
+		-w /workspace \
+		alpine:latest \
+		sh -c "apk add --no-cache openssl && \
+		if [ ! -f src/main/resources/privateKey.pem ]; then \
+			openssl genrsa -out src/main/resources/privateKey.pem 2048 && \
+			openssl rsa -in src/main/resources/privateKey.pem -pubout -out src/main/resources/publicKey.pem && \
+			echo 'RSA keys generated successfully'; \
+		else \
+			echo 'Keys already exist. Skipping generation.'; \
+		fi"
+
 dev-image:
 	docker build -f Dockerfile.dev -t $(DEV_IMAGE) .
 
 dev-up: dev-image
-	docker network create fatec-network 2>/dev/null || true
+	-docker network create fatec-network >$(NULL_DEV) 2>&1
 	docker run --rm -it \
 	--name $(DEV_CONTAINER) \
 	--network fatec-network \
