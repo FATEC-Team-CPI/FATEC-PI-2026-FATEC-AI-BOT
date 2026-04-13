@@ -1,4 +1,25 @@
 services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: fatec-ai-bot-backend-dev
+    ports:
+      - "8081:8080"
+      - "5005:5005"
+    environment:
+      - QUARKUS_DEVSERVICES_ENABLED=false
+      - QUARKUS_DYNAMODB_ENDPOINT_OVERRIDE=http://localstack:4566
+    volumes:
+      - .:/workspace
+      - ~/.m2:/root/.m2
+    working_dir: /workspace
+    depends_on:
+      localstack:
+        condition: service_healthy
+    networks:
+      - fatec-network
+
   localstack:
     image: localstack/localstack-pro
     container_name: localstack

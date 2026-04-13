@@ -1,15 +1,19 @@
 package org.acme.users;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import org.acme.users.dto.CreateUserRequest;
 import org.acme.users.dto.CreateUserResponse;
-import org.acme.users.dto.TokenUserRequest;
+import org.acme.users.dto.LoginRequest;
+import org.acme.users.dto.LoginResponse;
 import org.acme.users.dto.TokenUserResponse;
 import org.acme.users.service.IUserService;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -50,16 +54,8 @@ public class UserResource {
     public Response criar(CreateUserRequest request) {
         try {
             logger.info("Requisição para criar admin: {}", request.email());
-
-
             CreateUserResponse response = service.cadastrar(request);    
-
-
             return Response.status(Response.Status.CREATED).entity(response).build();
-        
-
-
-
 
         } catch (IllegalArgumentException e) {
             logger.warn("Erro ao criar admin: {}", e.getMessage());
@@ -105,42 +101,65 @@ public class UserResource {
 
 
     // criar metodo de login
+    /**
+     * POST /admin/login
+     * Realiza login de usuário e retorna JWT
+     */
+    @POST
+    @Path("/login")
+    @Operation(summary = "Login de usuário", description = "Autentica usuário com email e senha, retornando JWT")
+    @APIResponse(responseCode = "200", description = "Login realizado com sucesso",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponse.class)))
+    @APIResponse(responseCode = "401", description = "Credenciais inválidas")
+    public Response login(LoginRequest request) {
+        try {
+            logger.info("Requisição de login para: {}", request.email);
+            var loginResponse = service.loginProcess(request.unidade, request.email, request.password);
+            return Response.ok(loginResponse).build();
+        } catch (SecurityException e) {
+            logger.warn("Tentativa de login falhou: {}", request.email);
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity(Map.of("error", "Usuário ou senha inválidos"))
+                           .build();
+        } catch (Exception e) {
+            logger.error("Erro ao fazer login", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(Map.of("error", "Erro ao autenticar usuário"))
+                .build();
+        }
+    }
 
     // criar metodo de logout
-
-    // criar metodo de autenticação de token
-    @GET
-    @Path("auth/token")
-    @Operation(summary = "Validar token JWT", description = "Retorna se token válido e tempo de expiração")
-    @APIResponse(responseCode = "200", description = "Token válidado",
+    /**
+     * POST /admin/token
+     * Valida um token JWT recebido no header Authorization
+     * Delega validação para service (regra de negócio)
+     */
+    @POST
+    @Path("/token")
+    @RolesAllowed("**") // Força validação JWT automática - rejeita requisições sem token válido
+    @Operation(summary = "Validar token JWT", description = "Valida um token JWT e retorna informações sobre validade")
+    @APIResponse(responseCode = "200", description = "Token válido",
         content = @Content(mediaType = "application/json", schema = @Schema(implementation = TokenUserResponse.class)))
-    @APIResponse(responseCode = "404", description = "Token inválido")
-    public Response validarToken(@HeaderParam("Authorization") String token){
-        //header apenas recebe string
+    @APIResponse(responseCode = "401", description = "Token inválido ou expirado")
+    public Response validarToken(@Context JsonWebToken jwt) {
         try {
-            logger.info("Validando token: {}", token);
+            logger.info("Requisição de validação de token JWT");
+            
+            // Delega a lógica de validação para o service
+            TokenUserResponse response = service.validarToken(jwt);
+            return Response.ok(response).build();
 
-            TokenUserRequest tokenRequest = new TokenUserRequest(token);
-            //trasformo o token que recebi no seu dto request, que é string tambem
-
-            TokenUserResponse tokenResponse = service.validarToken(tokenRequest);
-            //envio o request (string) pro service e trasformo ele em response
-
-            return Response.status(Response.Status.OK) //statuys ok -> sucesso
-                .entity(tokenResponse) //corpo da resposta vai ser em token response
-                .build(); //constroi o objeto response + status
-             
-
-       } catch (IllegalArgumentException e) {
-            logger.warn("Credenciais de token não encontrado: {}", token);
-            return Response.status(Response.Status.NOT_FOUND)
-                .entity(Map.of("error", e.getMessage()))
+        } catch (IllegalArgumentException e) {
+            logger.warn("Token inválido: {}", e.getMessage());
+            return Response.status(Response.Status.UNAUTHORIZED)
+                .entity(Map.of("error", "Token inválido"))
                 .build();
-        
-            } catch (Exception e) {
+
+        } catch (Exception e) {
             logger.error("Erro ao validar token", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity(Map.of("error", "Token inválido ou vazio."))
+            return Response.status(Response.Status.UNAUTHORIZED)
+                .entity(Map.of("error", "Token inválido ou expirado"))
                 .build();
         }
     }

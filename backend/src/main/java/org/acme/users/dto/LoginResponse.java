@@ -1,4 +1,4 @@
-package org.acme.model;
+package org.acme.users.dto;
 
 public class LoginResponse {
     public String token;
