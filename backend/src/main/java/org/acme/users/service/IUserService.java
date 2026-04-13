@@ -2,8 +2,9 @@ package org.acme.users.service;
 
 import org.acme.users.dto.CreateUserRequest;
 import org.acme.users.dto.CreateUserResponse;
-import org.acme.users.dto.TokenUserRequest;
+import org.acme.users.dto.LoginResponse;
 import org.acme.users.dto.TokenUserResponse;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 /**
  * Service Interface: Contrato da camada de negócio
@@ -29,12 +30,25 @@ public interface IUserService {
     CreateUserResponse buscarPorEmail(String email) throws Exception;
 
     /**
-     * Caso de uso: Validar token
-     * @param token dados do token
-     * @return response com dados do token e tempo de validado do token
-     * @throws IllegalArgumentException se token invalido
+     * Caso de uso: Validar token JWT
+     * Verifica validade do token e extrai informações
+     * @param jwt token JWT validado pelo Quarkus
+     * @return response com dados do token e tempo de expiração
+     * @throws IllegalArgumentException se token inválido/expirado
      */
-    TokenUserResponse validarToken(TokenUserRequest token) throws Exception;
+    TokenUserResponse validarToken(JsonWebToken jwt) throws Exception;
+
+    /**
+     * Caso de uso: Login do usuário
+     * Autentica usuário por email e senha, retornando JWT
+     * @param unidade unidade FATEC (ex: "Itaquera")
+     * @param email email do usuário
+     * @param password senha em plain text
+     * @return LoginResponse com token JWT e mensagem de sucesso
+     * @throws SecurityException se credenciais inválidas ou usuário inativo
+     */
+    LoginResponse loginProcess(String unidade, String email, String password) throws Exception;
     //comentarios são importantes para documentacao
 
 }
+

@@ -10,8 +10,11 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import io.quarkus.elytron.security.common.BcryptUtil;
 
+import java.time.Instant;
 import java.util.Optional;
+
 
 
 /**
@@ -69,5 +72,49 @@ public class DynamoDBUserRepository implements IUserRepository {
         
         logger.info("Usuário encontrado para email: {}", email);
         return Optional.of(user);
+    }
+
+    @Override
+    public Optional<User> findByKeys(String pk, String sk) throws Exception {
+        logger.debug("Buscando usuário por PK: {} e SK: {}", pk, sk);
+        
+        // Mock para desenvolvimento/teste sem DB
+        if ("FatecItaquera#USERS".equals(pk) && "user@fatec.sp.gov.br".equals(sk)) {
+            User mock = new User(
+                pk,
+                sk,
+                "Usuário Teste",
+                BcryptUtil.bcryptHash("senha123"),
+                "EDITOR",
+                "active",
+                Instant.now(),
+                Instant.now()
+            );
+            logger.info("Usuário mock retornado para teste: {}", sk);
+            return Optional.of(mock);
+        }
+
+        // Código real para DynamoDB com Enhanced Client (usar quando DB estiver pronto)
+        try {
+            User user = table.getItem(r -> r
+                .key(k -> k
+                    .partitionValue(pk)
+                    .sortValue(sk)
+                )
+            );
+            
+            if (user == null) {
+                logger.debug("Usuário não encontrado para PK: {} SK: {}", pk, sk);
+                return Optional.empty();
+            }
+            
+            logger.info("Usuário encontrado: {}", sk);
+            return Optional.of(user);
+        } catch (Exception e) {
+            logger.error("Erro ao buscar usuário no DynamoDB", e);
+            // DB não configurado ou erro
+        }
+        
+        return Optional.empty();
     }
 }

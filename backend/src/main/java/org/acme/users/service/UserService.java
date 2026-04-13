@@ -9,16 +9,17 @@ import java.util.Optional;
 
 import org.acme.users.dto.CreateUserRequest;
 import org.acme.users.dto.CreateUserResponse;
-import org.acme.users.dto.TokenUserRequest;
+import org.acme.users.dto.LoginResponse;
 import org.acme.users.dto.TokenUserResponse;
 import org.acme.users.model.User;
 import org.acme.users.repository.IUserRepository;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.jose4j.jwt.consumer.InvalidJwtException;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
+import io.smallrye.jwt.build.Jwt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * Service Implementation: Lógica de negócio concreta
@@ -98,25 +99,82 @@ public class UserService implements IUserService {
             .orElseThrow(() -> new IllegalArgumentException("Admin não encontrado: " + email));
     }
 
+    /**
+     * Caso de uso: Login do usuário
+     * Autentica usando chaves de partição e ordenação
+     * Valida senha e retorna JWT
+     */
+    @Override
+    public LoginResponse loginProcess(String unidade, String email, String password) throws Exception {
+        logger.info("Iniciando login para: {}", email);
+        
+        // Sanitização e Validação
+        String sk = email.trim().toLowerCase();
+        String pk = "Fatec" + unidade.trim() + "#USERS";
+
+        // Validar se existe no DB usando findByKeys
+        // Optional<User> userOpt = repository.findByKeys(pk, sk);
+        Optional<User> userOpt = repository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            logger.warn("Usuário não encontrado para login: {}", email);
+            throw new SecurityException("Inválido");
+        }
+
+        User user = userOpt.get();
+
+        // Validar Match de Senha e Status
+        if (!"active".equals(user.status()) || !BcryptUtil.matches(password, user.passwordHash())) {
+            logger.warn("Falha na autenticação para: {} - Status: {}", email, user.status());
+            throw new SecurityException("Inválido");
+        }
+
+        // JWT real com dados do usuário
+        String token = Jwt.claims()
+            .issuer("fatec-auth")
+            .subject(user.sk())
+            .claim("name", user.name())
+            .claim("email", user.sk())
+            .claim("role", user.role())
+            .claim("status", user.status())
+            .expiresIn(3600)
+            .sign();
+
+        logger.info("Login realizado com sucesso para: {}", email);
+        return new LoginResponse(token, "Login realizado com sucesso");
+    }
 
     @Override
-    @RolesAllowed("admin")
-    public TokenUserResponse validarToken(TokenUserRequest token) throws Exception{
-        logger.info("Validando token: {}", token);
-
+    public TokenUserResponse validarToken(JsonWebToken jwt) throws Exception {
+        logger.info("Validando token JWT para usuário: {}", jwt.getSubject());
+        
         try {
-            Instant tokenResponseHrLimite = Instant.now().plusSeconds(7200);
-            return new TokenUserResponse("Token válido", tokenResponseHrLimite);
-
-            // String subject = jwt.getSubject(); // usuário
-            // Instant exp = parseInstant(jwt.getExpirationTime());
-
-
+            // Token já foi validado pelo Quarkus
+            // Se chegou aqui, é válido
+            
+            String subject = jwt.getSubject();
+            
+            Instant expirationTime = Instant.ofEpochSecond(jwt.getExpirationTime());
+            
+            // Validar se token não expirou
+            if (Instant.now().isAfter(expirationTime)) {
+                throw new IllegalArgumentException("Token expirado");
+            }
+            
+            logger.info("Token válido. Usuário: {}, Expira em: {}", subject, expirationTime);
+            
+            return new TokenUserResponse(
+                "Token válido para: " + subject,
+                expirationTime
+            );
+            
+        } catch (IllegalArgumentException e) {
+            logger.warn("Token inválido: {}", e.getMessage());
+            throw e;
+            
         } catch (Exception e) {
-            throw new Exception(e.getMessage());
-            //cria objeto throw a partir da classe exeception e retorna a mensagem de erro
-        }        
-
+            logger.error("Erro ao validar token", e);
+            throw new IllegalArgumentException("Erro ao processar token: " + e.getMessage());
+        }
     }
     
     

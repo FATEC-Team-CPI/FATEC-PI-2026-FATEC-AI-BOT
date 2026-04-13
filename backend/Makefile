@@ -27,7 +27,7 @@ NULL_DEV := /dev/null
 MVNW := ./mvnw
 endif
 
-.PHONY: help generate-keys dev-image dev-up dev-shell dev-down build-artifacts prod-image prod-up prod-down prod-logs localstack-up localstack-down localstack-logs localstack-tables clean-target
+.PHONY: help generate-keys dev-image dev-up dev-shell dev-down build-artifacts prod-image prod-up prod-down prod-logs localstack-up localstack-down localstack-logs localstack-init-table clean-target
 
 help:
 	@echo "Targets available:"
@@ -44,7 +44,7 @@ help:
 	@echo "  make localstack-up    Start LocalStack (DynamoDB only)"
 	@echo "  make localstack-down  Stop LocalStack"
 	@echo "  make localstack-logs  Tail LocalStack logs"
-	@echo "  make localstack-tables List DynamoDB tables in LocalStack"
+	@echo "  make localstack-init-table Create DynamoDB table in LocalStack"
 	@echo "  make clean-target     Remove local target directory"
 
 generate-keys:
@@ -123,8 +123,13 @@ localstack-down:
 localstack-logs:
 	docker compose logs -f $(LOCALSTACK_SERVICE)
 
-localstack-tables:
-	docker compose exec $(LOCALSTACK_SERVICE) awslocal dynamodb list-tables --region us-east-1
+localstack-init-table:
+	docker exec localstack awslocal dynamodb create-table \
+		--table-name fatec-ai-bot-core \
+		--attribute-definitions AttributeName=pk,AttributeType=S AttributeName=sk,AttributeType=S \
+		--key-schema AttributeName=pk,KeyType=HASH AttributeName=sk,KeyType=RANGE \
+		--billing-mode PAY_PER_REQUEST \
+		--region us-east-1 || echo "Table already exists"
 
 clean-target:
 	rm -rf target

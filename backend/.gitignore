@@ -47,3 +47,4 @@ nb-configuration.xml
 # JWT RSA Keys (private/public) - NEVER COMMIT THESE
 src/main/resources/*.pem
 # src/main/resources/publicKey.pem
+*.pem

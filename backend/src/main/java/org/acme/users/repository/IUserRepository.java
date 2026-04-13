@@ -22,5 +22,11 @@ public interface IUserRepository {
      */
     Optional<User> findByEmail(String email) throws Exception;
 
+    /**
+     * Busca um usuário usando chaves de partição e ordenação
+     * Util para desenvolvimento/teste com mock
+     */
+    Optional<User> findByKeys(String pk, String sk) throws Exception;
+
     
 }
