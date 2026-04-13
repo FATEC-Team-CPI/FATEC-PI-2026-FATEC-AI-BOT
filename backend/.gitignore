@@ -43,3 +43,7 @@ nb-configuration.xml
 /.quarkus/cli/plugins/
 # TLS Certificates
 .certs/
+
+# JWT RSA Keys (private/public) - NEVER COMMIT THESE
+src/main/resources/*.pem
+# src/main/resources/publicKey.pem
