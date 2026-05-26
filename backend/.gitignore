@@ -38,13 +38,12 @@ nb-configuration.xml
 
 # Local environment
 .env
+docker-compose.override.yml
 
 # Plugin directory
 /.quarkus/cli/plugins/
 # TLS Certificates
 .certs/
-
-# JWT RSA Keys (private/public) - NEVER COMMIT THESE
-src/main/resources/*.pem
-# src/main/resources/publicKey.pem
+mcp-server/
 *.pem
+mcp-server.zip
