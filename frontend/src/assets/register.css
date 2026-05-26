@@ -1,0 +1,27 @@
+.app-container {
+  margin-left: var(--spacing-sm);
+  margin-right: var(--spacing-sm);
+}
+
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.form-group label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.form-group input {
+  padding: 1rem;
+}
+
+
+.form-group input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px rgba(178, 0, 0, 0.1);
+}
