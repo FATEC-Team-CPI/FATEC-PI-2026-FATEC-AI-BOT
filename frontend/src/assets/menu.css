@@ -1,0 +1,60 @@
+.app-container {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  background-color: unset;
+}
+
+.app-title{
+  color: var(--color-white);
+}
+
+.app-subtitle{
+  color: var(--color-white);
+  margin-top: -1rem;
+}
+
+.app-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-xs);
+  width: 50%;
+  margin-bottom: var(--spacing-sm);
+}
+
+.form-btn {
+  padding: 1.2rem 1rem;
+  background-color: unset;
+  color: var(--color-white);
+  outline: auto ;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: center;
+  margin-top: unset;
+  text-decoration: none;
+  text-align: center;
+  
+  transition: var(--transition-normal);
+}
+
+.form-btn:hover {
+  background-color: var(--color-white);
+  color: var(--color-primary-light);
+  box-shadow: var(--shadow-md);
+  outline: auto solid var(--color-primary-light);
+  transform: translateY(-2px);
+}
+
+.cps-fatec-logo {
+  width: 20rem;
+  height: auto;
+  bottom: 2rem;
+  right: 2rem;
+  margin: 0;
+  position: absolute;
+}
