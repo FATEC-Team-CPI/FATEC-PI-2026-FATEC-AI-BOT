@@ -31,7 +31,7 @@
 .chat-msg-area{
     background-color: var(--color-gray);
     padding: 2% 0;
-    width: 92%;
+    width: 95%;
     margin: 1% auto auto auto;
     overflow-y: scroll;
     height: 30rem;
@@ -40,7 +40,7 @@
 
 /* width */
 ::-webkit-scrollbar {
-  width: 20px;
+  width: 15px;
 }
 
 
@@ -49,6 +49,7 @@
 ::-webkit-scrollbar-track {
   background-color: #b0b0b0;
   border-radius: 10px;
+  margin:1rem;
 }
  
 /* Handle */
@@ -90,8 +91,36 @@
     display: flex;
     flex-direction: row;
     gap: 20px;
-    width: 92%;
+    width: 95%;
 }
+
+.chat-loading-animation{
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.chat-loading-animation > *{
+    background-color: var(--color-white);
+    border-radius: 100%;
+    padding: 3px;
+}
+
+.chat-loading-animation :nth-child(1){
+    animation: up-down 1s forwards infinite alternate-reverse;
+}
+
+.chat-loading-animation :nth-child(2){
+    animation: up-down 1s forwards infinite alternate-reverse;
+    animation-delay: 200ms;
+}
+
+.chat-loading-animation :nth-child(3){
+    animation: up-down 1s forwards infinite alternate-reverse;
+    animation-delay: 500ms;
+    
+}
+
 
 .input-chat {
     padding: 1%;
@@ -134,3 +163,15 @@
     z-index: -1;
 } */
 
+@keyframes up-down {
+
+    0% {
+        transform: translateY(-3px);
+        opacity: 1;
+    }
+
+  100% {
+        transform: translateY(3px);
+        opacity: 0.5;
+    }
+}

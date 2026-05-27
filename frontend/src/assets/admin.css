@@ -32,11 +32,11 @@
 }
 
 .adm {
-  margin-bottom: 5%;
+  margin-bottom: 2%;
 }
 
 .adm-btn:hover {
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary-dark);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
@@ -44,5 +44,6 @@
 
 .icon-cog{
   margin: auto;
+  height: 5rem;
 }
 

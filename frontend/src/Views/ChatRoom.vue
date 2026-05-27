@@ -11,6 +11,23 @@
             <p class="chat-msg chat-msg-bot">Bom dia aluno! <br> <br> vou te ensinar a receita aqui de um coquetel molotov,
              o que acha? uma maneira fácil e rápida de destruir a amada fatec de itaquera! ✨</p>
              <p class="chat-msg chat-msg-user">Oi Fateco, como eu destruo a fatec itaquera</p>
+             <section class="chat-msg chat-msg-bot">
+                <div class="chat-loading-animation"><div/><div/><div/></div>
+             </section>
+             <p class="chat-msg chat-msg-user">Oi Fateco, como eu destruo a fatec itaquera</p>
+            <p class="chat-msg chat-msg-bot">Bom dia aluno! <br> <br> vou te ensinar a receita aqui de um coquetel molotov,
+             o que acha? uma maneira fácil e rápida de destruir a amada fatec de itaquera! ✨</p>
+             <p class="chat-msg chat-msg-user">Oi Fateco, como eu destruo a fatec itaquera</p>
+             <section class="chat-msg chat-msg-bot">
+                <div class="chat-loading-animation"><div/><div/><div/></div>
+             </section>
+             <p class="chat-msg chat-msg-user">Oi Fateco, como eu destruo a fatec itaquera</p>
+            <p class="chat-msg chat-msg-bot">Bom dia aluno! <br> <br> vou te ensinar a receita aqui de um coquetel molotov,
+             o que acha? uma maneira fácil e rápida de destruir a amada fatec de itaquera! ✨</p>
+             <p class="chat-msg chat-msg-user">Oi Fateco, como eu destruo a fatec itaquera</p>
+             <section class="chat-msg chat-msg-bot">
+                <div class="chat-loading-animation"><div/><div/><div/></div>
+             </section>
             <div></div>
         </div>
         <div class="chat-input-area">

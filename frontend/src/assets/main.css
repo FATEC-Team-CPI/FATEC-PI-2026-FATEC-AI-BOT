@@ -24,7 +24,7 @@
 
   --color-primary: #b20000;
   --color-primary-light: #c54040;
-  --color-primary-dark: #7a0000;
+  --color-primary-dark: #7c0a0a;
 
   --color-neutral: #4a4459;
   --color-neutral-light: #6a6478;
@@ -161,7 +161,7 @@ body {
 
 
 .form-btn:hover {
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary-dark);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }

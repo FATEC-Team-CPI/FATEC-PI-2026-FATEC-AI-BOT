@@ -40,7 +40,7 @@
 }
 
 .btn:hover {
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
