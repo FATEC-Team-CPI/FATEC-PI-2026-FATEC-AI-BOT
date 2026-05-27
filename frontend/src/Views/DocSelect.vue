@@ -14,7 +14,7 @@
 
         <section class=" options-card">
           
-          <img id="cloud" class="img-icon" src="../assets/cloud-download.png" alt="">
+          <img id="cloud" class="img-icon" src="../assets/cloud.png" alt="">
 
           <section class="options-content">
               <div>
@@ -23,7 +23,6 @@
               </div>
               <input type="file" name="" id="" class="options-input">
           </section>
-          
         </section> 
         <button class="options-btn">></button>
       </section>
@@ -36,7 +35,7 @@
 
    <section class="options-card">
 
-     <img id="link" src="../assets/link 1.png" alt="">
+     <img id="link" src="../assets/link.png" alt="">
 
      <section class="options-content">
        <h1 class="">CONFIGURAÇÃO POR LINK</h1>
