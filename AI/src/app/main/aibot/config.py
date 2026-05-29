@@ -1,17 +1,42 @@
 import os
-from huggingface_hub import InferenceClient
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+import boto3
+from botocore.config import Config
+from boto3.dynamodb.conditions import Key, Attr
 
-# Configurações de Caminho e Token
-CHROMA_PATH = "./chroma_db"
-HF_TOKEN = os.getenv("HF_TOKEN")
+# Este serviço NÃO roda mais IA/embeddings.
+# Ele faz apenas ingestão/processamento e persistência (DynamoDB).
 
-# Inicialização da IA
-client = InferenceClient(api_key=HF_TOKEN)
+# DynamoDB (optional) - used to update ingestion status
+DDB_TABLE = os.getenv("DDB_TABLE_NAME", "fatec-ai-bot-core")
+DDB_ENDPOINT = os.getenv("AWS_DYNAMODB_ENDPOINT_OVERRIDE")
+AWS_REGION = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
 
-# Inicialização dos Embeddings (Modelo leve para CPU)
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+BUCKET_NAME = os.getenv("BUCKET_NAME", "fatec-ai-bot-bucket")
+S3_ENDPOINT = os.getenv("AWS_S3_ENDPOINT_OVERRIDE") or DDB_ENDPOINT
 
-# Inicialização do Banco Vetorial
-db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
+if DDB_ENDPOINT:
+	ddb_config = Config(retries={'max_attempts': 3})
+	dynamo_resource = boto3.resource(
+		'dynamodb',
+		endpoint_url=DDB_ENDPOINT,
+		region_name=AWS_REGION,
+		aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID', 'test'),
+		aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY', 'test'),
+		config=ddb_config,
+	)
+	dynamo_table = dynamo_resource.Table(DDB_TABLE)
+else:
+	dynamo_table = None
+
+if S3_ENDPOINT:
+	s3_config = Config(retries={'max_attempts': 3})
+	s3_client = boto3.client(
+		's3',
+		endpoint_url=S3_ENDPOINT,
+		region_name=AWS_REGION,
+		aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID', 'test'),
+		aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY', 'test'),
+		config=s3_config,
+	)
+else:
+	s3_client = None
