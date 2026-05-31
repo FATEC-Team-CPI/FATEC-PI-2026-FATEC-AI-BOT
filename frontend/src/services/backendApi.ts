@@ -45,9 +45,28 @@ export type UploadDocumentResponse = {
   error?: string
 }
 
+export type DocumentListItem = {
+  pk?: string
+  sk?: string
+  entityType?: string | null
+  s3Key?: string | null
+  status?: string | null
+  gsi2pk?: string | null
+  gsi2sk?: string | null
+}
+
+export type UserListItem = {
+  email?: string
+  name?: string
+  role?: string
+  status?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
 type UploadProgressHandler = (progress: number) => void
 
-const API_BASE_URL = ((import.meta as ImportMeta & { env?: { VITE_API_BASE_URL?: string } }).env?.VITE_API_BASE_URL ?? 'http://localhost:8082').trim()
+const API_BASE_URL = ((import.meta as ImportMeta & { env?: { VITE_API_BASE_URL?: string } }).env?.VITE_API_BASE_URL ?? '/api').trim()
 
 // Determine AI upload URL. Default to localhost when not provided.
 let AI_UPLOAD_URL = ((import.meta as ImportMeta & { env?: { VITE_AI_UPLOAD_URL?: string } }).env?.VITE_AI_UPLOAD_URL ?? 'http://localhost:8002/upload').trim()
@@ -189,6 +208,14 @@ export async function createAdmin(payload: CreateAdminPayload): Promise<CreateAd
 
 export async function getAdminByEmail(email: string): Promise<AdminLookupResponse> {
   return requestJson<AdminLookupResponse>(`/admin/${encodeURIComponent(email)}`)
+}
+
+export async function listAdmins(): Promise<UserListItem[]> {
+  return requestJson<UserListItem[]>('/admin/list')
+}
+
+export async function listDocuments(): Promise<DocumentListItem[]> {
+  return requestJson<DocumentListItem[]>('/aibot/docs')
 }
 
 export async function validateStoredToken(): Promise<TokenValidationResponse> {

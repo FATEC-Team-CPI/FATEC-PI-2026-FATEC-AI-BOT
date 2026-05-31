@@ -55,6 +55,8 @@ async function handleUpload(): Promise<void> {
 </script>
 
 <template>
+  <router-link to="/admin" tag="button" class="seta"><img src="../assets/seta.png" alt=""></router-link>
+
   <div class="app-container app-container-bar">
     <section>
       <h1 class="app-title">CONFIGURAR DOCUMENTOS</h1>

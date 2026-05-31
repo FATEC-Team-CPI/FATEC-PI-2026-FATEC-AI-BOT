@@ -17,9 +17,32 @@
   width: 30%;
 }
 
+.app-container-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .app-form{
   gap: var(--spacing-xs);
   display: flex;
+  flex: 1;
+  align-items: flex-start;
+}
+
+.admin-session {
+  margin-bottom: 0;
+}
+
+.admin-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  padding-top: 2rem;
+}
+
+.admin-logout-btn {
+  width: min(30%, 18rem);
 }
 
 .adm-btn p{

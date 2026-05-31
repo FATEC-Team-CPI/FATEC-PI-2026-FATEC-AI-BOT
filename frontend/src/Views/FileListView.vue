@@ -1,142 +1,83 @@
-<script setup lang="ts"></script>
-
-<template>
-  <div class="app-container app-container-bar">
-    <section>
-      <h1 class="app-title">ARQUIVOS</h1>
-      <h2 class="app-subtitle sub">Lista de arquivos enviados</h2>
-    </section>
-    <section class="file-area">
-        <section class="file-list">
-            <section class="file">
-                <section class="file-info">
-                    <img id="file" src="../assets/file.png" alt="">
-                    <p id="filename">Nomedoarquivo.txt</p>
-                    <p>Tipo: Arquivo txt</p>
-                    <p>Status: Pendente</p>
-                    <p>Data: 26/05/2026</p>
-                    <p>Hora: 21:25:51</p>
-                </section>
-                    <button class="trash-btn"><img src="../assets/trash.png" alt=""/></button>
-            </section>
-            <section class="file">
-                <section class="file-info">
-                    <img id="file" src="../assets/file.png" alt="">
-                    <p id="filename">Nomedoarquivo.txt</p>
-                    <p>Tipo: Arquivo txt</p>
-                    <p>Status: Pendente</p>
-                    <p>Data: 26/05/2026</p>
-                    <p>Hora: 21:25:51</p>
-                </section>
-                    <button class="trash-btn"><img src="../assets/trash.png" alt=""/></button>
-            </section>
-            <section class="file">
-                <section class="file-info">
-                    <img id="file" src="../assets/file.png" alt="">
-                    <p id="filename">Nomedoarquivo.txt</p>
-                    <p>Tipo: Arquivo txt</p>
-                    <p>Status: Pendente</p>
-                    <p>Data: 26/05/2026</p>
-                    <p>Hora: 21:25:51</p>
-                </section>
-                    <button class="trash-btn"><img src="../assets/trash.png" alt=""/></button>
-            </section>
-            <section class="file">
-                <section class="file-info">
-                    <img id="file" src="../assets/file.png" alt="">
-                    <p id="filename">Nomedoarquivo.txt</p>
-                    <p>Tipo: Arquivo txt</p>
-                    <p>Status: Pendente</p>
-                    <p>Data: 26/05/2026</p>
-                    <p>Hora: 21:25:51</p>
-                </section>
-                    <button class="trash-btn"><img src="../assets/trash.png" alt=""/></button>
-            </section>
-            <section class="file">
-                <section class="file-info">
-                    <img id="file" src="../assets/file.png" alt="">
-                    <p id="filename">Nomedoarquivo.txt</p>
-                    <p>Tipo: Arquivo txt</p>
-                    <p>Status: Pendente</p>
-                    <p>Data: 26/05/2026</p>
-                    <p>Hora: 21:25:51</p>
-                </section>
-                    <button class="trash-btn"><img src="../assets/trash.png" alt=""/></button>
-            </section>
-            <section class="file">
-                <section class="file-info">
-                    <img id="file" src="../assets/file.png" alt="">
-                    <p id="filename">Nomedoarquivo.txt</p>
-                    <p>Tipo: Arquivo txt</p>
-                    <p>Status: Pendente</p>
-                    <p>Data: 26/05/2026</p>
-                    <p>Hora: 21:25:51</p>
-                </section>
-                    <button class="trash-btn"><img src="../assets/trash.png" alt=""/></button>
-            </section>
-
-            <section>
-                <p class="end-scroll">-- Sem mais resultados --</p>
-            </section>
-
-        </section>
-    </section>
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { listDocuments, type DocumentListItem } from '../services/backendApi'
 
-type UploadHistoryItem = {
-    fileName: string
-    key: string | null
-    mensagem: string
-    sucesso: boolean
-    uploadedAt: string
-}
+const documents = ref<DocumentListItem[]>([])
+const isLoading = ref(false)
+const feedback = ref('')
+const feedbackType = ref<'success' | 'error' | ''>('')
 
-const uploads = ref<UploadHistoryItem[]>([])
+async function loadDocuments(): Promise<void> {
+  isLoading.value = true
+  feedback.value = ''
+  feedbackType.value = ''
 
-function loadUploads(): void {
-    try {
-        uploads.value = JSON.parse(localStorage.getItem('fateco_upload_history') ?? '[]') as UploadHistoryItem[]
-    } catch {
-        uploads.value = []
-    }
+  try {
+    documents.value = await listDocuments()
+    feedbackType.value = 'success'
+    feedback.value = documents.value.length
+      ? `${documents.value.length} documento(s) encontrado(s).`
+      : 'Nenhum documento encontrado.'
+  } catch (error) {
+    feedbackType.value = 'error'
+    feedback.value = error instanceof Error ? error.message : 'Falha ao listar documentos'
+    documents.value = []
+  } finally {
+    isLoading.value = false
+  }
 }
 
 onMounted(() => {
-    loadUploads()
+  void loadDocuments()
 })
 </script>
 
 <template>
-    <router-link to="/admin" tag="button" class="seta"><img src="../assets/seta.png" alt=""></router-link>
-    <div class="app-container app-container-bar">
+  <router-link to="/admin" tag="button" class="seta"><img src="../assets/seta.png" alt=""></router-link>
+
+  <div class="app-container app-container-bar">
+    <section>
+      <h1 class="app-title">DOCUMENTOS</h1>
+      <h2 class="app-subtitle sub">Listagem dos documentos salvos no DynamoDB</h2>
+    </section>
+
+    <section class="list-actions">
+      <router-link to="/docs" class="form-btn list-action-btn">Subir documentos</router-link>
+    </section>
+
+    <section class="file-area">
+      <section v-if="isLoading" class="file-list">
+        <p class="end-scroll">Carregando documentos...</p>
+      </section>
+
+      <section v-else class="file-list">
+        <section v-for="document in documents" :key="`${document.pk}-${document.sk}`" class="file">
+          <section class="file-info">
+            <img id="file" src="../assets/file.png" alt="">
+            <div class="doc-content">
+              <p class="doc-name">{{ document.sk ?? '-' }}</p>
+              <p class="doc-pk">PK: {{ document.pk ?? '-' }}</p>
+            </div>
+          </section>
+          <span class="doc-status" :class="`doc-status--${(document.status ?? 'unknown').toLowerCase()}`">
+            {{ document.status ?? 'UNKNOWN' }}
+          </span>
+        </section>
+
+        <section v-if="!documents.length">
+          <p class="end-scroll">Nenhum documento encontrado.</p>
+        </section>
+
         <section>
-            <h1 class="app-title">ARQUIVOS</h1>
-            <h2 class="app-subtitle sub">Histórico local dos arquivos enviados ao backend</h2>
+          <p class="end-scroll">-- Sem mais resultados --</p>
         </section>
+      </section>
+    </section>
 
-        <section class="file-area">
-            <section class="file-list">
-                <section v-for="upload in uploads" :key="`${upload.fileName}-${upload.uploadedAt}`" class="file">
-                    <section class="file-info">
-                        <img id="file" src="../assets/file.png" alt="">
-                        <p id="filename">{{ upload.fileName }}</p>
-                        <p>Chave: {{ upload.key ?? '-' }}</p>
-                        <p>Status: {{ upload.sucesso ? 'Concluído' : 'Falhou' }}</p>
-                        <p>Mensagem: {{ upload.mensagem }}</p>
-                        <p>Data: {{ new Date(upload.uploadedAt).toLocaleDateString('pt-BR') }}</p>
-                        <p>Hora: {{ new Date(upload.uploadedAt).toLocaleTimeString('pt-BR') }}</p>
-                    </section>
-                </section>
-
-                <section v-if="!uploads.length">
-                    <p class="end-scroll">Nenhum upload registrado ainda.</p>
-                </section>
-
-                <section>
-                    <p class="end-scroll">-- Sem mais resultados --</p>
-                </section>
-            </section>
-        </section>
+    <div v-if="feedback" class="users-empty" :class="feedbackType === 'error' ? 'error' : 'success'">
+      <p>{{ feedback }}</p>
     </div>
+  </div>
 </template>
+
+<style scoped src="../assets/docs.css"></style>

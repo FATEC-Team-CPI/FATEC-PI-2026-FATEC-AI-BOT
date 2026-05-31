@@ -137,6 +137,20 @@
   box-shadow: 0px 0px 10px 1px var(--color-neutral-light);
 }
 
+.list-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -1rem;
+}
+
+.list-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16rem;
+  margin-top: 0;
+}
+
 .file-list {
   display: flex;
   flex-direction:column;
@@ -194,6 +208,52 @@
   flex-direction: row;
   align-items: center;
   gap: 15px;
+}
+
+.doc-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.doc-name {
+  font-weight: 900;
+  font-size: 1.25rem;
+  color: var(--color-white);
+  margin: 0;
+}
+
+.doc-pk {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.doc-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--color-white);
+  white-space: nowrap;
+}
+
+.doc-status--completed,
+.doc-status--active {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.doc-status--failed,
+.doc-status--error {
+  background: rgba(255, 230, 230, 0.25);
+}
+
+.doc-status--unknown {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .file:hover,.file:hover .trash-btn {

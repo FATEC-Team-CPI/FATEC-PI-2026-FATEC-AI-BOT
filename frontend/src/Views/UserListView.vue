@@ -1,38 +1,51 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { getAdminByEmail } from '../services/backendApi'
+import { onMounted, ref } from 'vue'
+import { listAdmins, type UserListItem } from '../services/backendApi'
 
-const email = ref('')
+const admins = ref<UserListItem[]>([])
 const isLoading = ref(false)
 const feedback = ref('')
 const feedbackType = ref<'success' | 'error' | ''>('')
-const user = ref<{ email?: string; name?: string; role?: string; status?: string; createdAt?: string; updatedAt?: string } | null>(null)
 
-async function handleSearch(): Promise<void> {
-  feedback.value = ''
-  feedbackType.value = ''
-  user.value = null
-
-  if (!email.value.trim()) {
-    feedbackType.value = 'error'
-    feedback.value = 'Informe um email para buscar.'
-    return
+function formatDateTime(value?: string): string {
+  if (!value) {
+    return '-'
   }
 
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) {
+    return value
+  }
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  }).format(parsed)
+}
+
+async function loadAdmins(): Promise<void> {
   isLoading.value = true
+  feedback.value = ''
+  feedbackType.value = ''
 
   try {
-    const response = await getAdminByEmail(email.value.trim())
-    user.value = response
+    admins.value = await listAdmins()
     feedbackType.value = 'success'
-    feedback.value = 'Administrador encontrado.'
+    feedback.value = admins.value.length
+      ? `${admins.value.length} usuário(s) encontrado(s).`
+      : 'Nenhum usuário encontrado.'
   } catch (error) {
     feedbackType.value = 'error'
-    feedback.value = error instanceof Error ? error.message : 'Falha ao buscar administrador'
+    feedback.value = error instanceof Error ? error.message : 'Falha ao listar usuários'
+    admins.value = []
   } finally {
     isLoading.value = false
   }
 }
+
+onMounted(() => {
+  void loadAdmins()
+})
 </script>
 
 <template>
@@ -41,24 +54,33 @@ async function handleSearch(): Promise<void> {
   <div class="app-container app-container-bar">
     <section>
       <h1 class="app-title">USUARIOS</h1>
-      <h2 class="app-subtitle sub">Consulte os usuarios cadastrados no sistema</h2>
+      <h2 class="app-subtitle sub">Listagem dos administradores e editores cadastrados</h2>
+    </section>
+
+    <section class="list-actions">
+      <router-link to="/register" class="form-btn list-action-btn">Cadastrar novo usuário</router-link>
     </section>
 
     <section class="users-list">
-      <form class="users-empty" @submit.prevent="handleSearch">
-        <h3>Buscar administrador</h3>
-        <p>O backend atual expõe consulta por email, então esta tela pesquisa um admin específico.</p>
-        <input v-model="email" class="input" type="email" placeholder="admin@fatec.sp.gov.br">
-        <button class="form-btn" type="submit" :disabled="isLoading">{{ isLoading ? 'Buscando...' : 'Buscar' }}</button>
-      </form>
+      <div v-if="isLoading" class="users-empty">
+        <p>Carregando usuários...</p>
+      </div>
 
-      <div v-if="user" class="users-empty">
-        <h3>Resultado</h3>
-        <p>Nome: {{ user.name ?? '-' }}</p>
-        <p>Email: {{ user.email ?? '-' }}</p>
-        <p>Perfil: {{ user.role ?? '-' }}</p>
-        <p>Status: {{ user.status ?? '-' }}</p>
-        <p>Criado em: {{ user.createdAt ?? '-' }}</p>
+      <div v-for="admin in admins" :key="`${admin.email}-${admin.createdAt ?? ''}`" class="users-row">
+        <div class="users-row-main">
+          <h3>{{ admin.name ?? '-' }}</h3>
+          <p>Email: {{ admin.email ?? '-' }}</p>
+          <p>Perfil: {{ admin.role ?? '-' }}</p>
+          <p>Status: {{ admin.status ?? '-' }}</p>
+        </div>
+        <div class="users-row-dates">
+          <p>Criado em: {{ formatDateTime(admin.createdAt) }}</p>
+          <p>Atualizado em: {{ formatDateTime(admin.updatedAt) }}</p>
+        </div>
+      </div>
+
+      <div v-if="!isLoading && !admins.length" class="users-empty">
+        <p>Nenhum usuário encontrado.</p>
       </div>
 
       <div v-if="feedback" class="users-empty" :class="feedbackType === 'error' ? 'error' : 'success'">
