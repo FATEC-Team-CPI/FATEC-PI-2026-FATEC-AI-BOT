@@ -228,30 +228,34 @@ class DocumentRepository:
 
             ddb_endpoint = os.getenv('AWS_DYNAMODB_ENDPOINT_OVERRIDE')
             aws_region = os.getenv('AWS_DEFAULT_REGION', 'us-east-1')
-            if ddb_endpoint:
-                cfg = Config(retries={'max_attempts': 2})
-                resource = boto3.resource(
-                    'dynamodb',
-                    endpoint_url=ddb_endpoint,
-                    region_name=aws_region,
-                    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID', 'test'),
-                    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY', 'test'),
-                    config=cfg,
-                )
-                table_name = os.getenv('DDB_TABLE_NAME', 'fatec-ai-bot-core')
-                self.dynamo_table = resource.Table(table_name)
+            cfg = Config(retries={'max_attempts': 2})
+            client_kwargs = {
+                'region_name': aws_region,
+                'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID', 'test'),
+                'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY', 'test'),
+                'config': cfg,
+            }
 
-                # S3 client (LocalStack)
-                self.bucket = os.getenv("BUCKET_NAME", "fatec-ai-bot-bucket")
-                s3_endpoint = os.getenv("AWS_S3_ENDPOINT_OVERRIDE", ddb_endpoint)
-                self.s3 = boto3.client(
-                    "s3",
-                    endpoint_url=s3_endpoint,
-                    region_name=aws_region,
-                    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID", "test"),
-                    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY", "test"),
-                    config=cfg,
-                )
+            if ddb_endpoint:
+                client_kwargs['endpoint_url'] = ddb_endpoint
+
+            resource = boto3.resource(
+                'dynamodb',
+                **client_kwargs,
+            )
+            table_name = os.getenv('DDB_TABLE_NAME', 'fatec-ai-bot-core')
+            self.dynamo_table = resource.Table(table_name)
+
+            # S3 client (AWS or LocalStack, depending on configuration)
+            self.bucket = os.getenv("BUCKET_NAME", "fatec-ai-bot-bucket")
+            s3_endpoint = os.getenv("AWS_S3_ENDPOINT_OVERRIDE")
+            s3_client_kwargs = dict(client_kwargs)
+            if s3_endpoint:
+                s3_client_kwargs['endpoint_url'] = s3_endpoint
+            self.s3 = boto3.client(
+                "s3",
+                **s3_client_kwargs,
+            )
         except Exception:
             self.dynamo_table = None
             self.s3 = None

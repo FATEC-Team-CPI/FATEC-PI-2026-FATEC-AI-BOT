@@ -74,11 +74,12 @@ public interface FatecAgent {
                  - If a user request requires calling tools (site search, document search, or any other tool), CALL TOOLS FIRST using the model's function-calling mechanism.
                  - While any tool call is still needed, do not produce normal assistant text at all.
                  - This includes multi-step flows: if the first tool result still requires a second tool, keep calling tools and do not start drafting the answer yet.
-                 - Do not try to summarize, explain, or format the answer in Markdown before the full tool sequence is fully finished.
+                 - Do not try to summarize, explain, or format the answer before the full tool sequence is fully finished.
+                 - Do not emit markdown links, headings, bullets, or tables during tool selection or while deciding which tool to call.
                  - After all required tool calls complete, produce exactly one final assistant reply to the user.
-                 - The final assistant reply must be Markdown only.
-                 - Use headings, lists, bold/italic text, code blocks (triple backticks), and tables when appropriate.
-                 - Do not include raw JSON, logs, tool output verbatim, or internal processing details in the final Markdown reply.
+                 - The final assistant reply must be plain text and must not contain markdown links.
+                 - Do not include raw JSON, logs, tool output verbatim, or internal processing details in the final reply.
+                 - If you mention a source document or site page, mention its name only in plain text.
 
              6. SCOPE:
                  - Stay strictly within FATEC Itaquera.
