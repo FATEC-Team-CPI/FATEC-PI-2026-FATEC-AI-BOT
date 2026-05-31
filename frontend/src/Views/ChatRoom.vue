@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import MarkdownIt from 'markdown-it'
+import DOMPurify from 'dompurify'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
 
 type ChatMessage = {
     id: number
@@ -104,6 +108,27 @@ function pushMessage(role: 'user' | 'bot', text: string): void {
         text: trimmed,
     })
     scrollToBottom()
+}
+
+const md = new MarkdownIt({
+    html: true,
+    linkify: true,
+    typographer: true,
+})
+
+function renderMarkdown(text: string): string {
+    const safeText = text ?? ''
+    const html = md.render(safeText)
+    const clean = DOMPurify.sanitize(html)
+    // highlight code blocks after DOM update
+    nextTick(() => {
+        try {
+            hljs.highlightAll()
+        } catch (e) {
+            // ignore
+        }
+    })
+    return clean
 }
 
 function flushPendingMessages(): void {
@@ -228,14 +253,19 @@ onBeforeUnmount(() => {
             <img src="../assets/Btnicon.png" alt="Fechar" class="chat-fechar">
         </div>
                 <div ref="messageAreaRef" class="chat-msg-area">
-                        <p
+                        <div
                             v-for="msg in messages"
                             :key="msg.id"
                             class="chat-msg"
                             :class="msg.role === 'user' ? 'chat-msg-user' : 'chat-msg-bot'"
                         >
-                            {{ msg.text }}
-                        </p>
+                            <template v-if="msg.role === 'bot'">
+                                <div class="chat-msg-bot-content" v-html="renderMarkdown(msg.text)"></div>
+                            </template>
+                            <template v-else>
+                                <p class="chat-msg-user-text">{{ msg.text }}</p>
+                            </template>
+                        </div>
 
                         <section v-if="isAwaitingResponse" class="chat-msg chat-msg-bot">
                             <div class="chat-loading-animation"><div/><div/><div/></div>
