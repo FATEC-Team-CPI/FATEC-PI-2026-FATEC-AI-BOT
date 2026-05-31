@@ -21,6 +21,10 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import java.util.List;
 
 import java.util.Map;
 
@@ -160,6 +164,26 @@ public class UserResource {
             logger.error("Erro ao validar token", e);
             return Response.status(Response.Status.UNAUTHORIZED)
                 .entity(Map.of("error", "Token inválido ou expirado"))
+                .build();
+        }
+    }
+
+    /**
+     * GET /admin/list
+     * Lista todos os administradores/editores
+     */
+    @GET
+    @Path("/list")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Listar administradores", description = "Retorna todos os administradores/editores cadastrados")
+    public Response listarAdmins() {
+        try {
+            List<CreateUserResponse> admins = service.listarAdmins();
+            return Response.ok(admins).build();
+        } catch (Exception e) {
+            logger.error("Erro ao listar administradores", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(java.util.Map.of("error", "Erro ao listar administradores: " + e.getMessage()))
                 .build();
         }
     }

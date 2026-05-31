@@ -9,6 +9,10 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.Path;
 
 @Path("/aibot")
@@ -59,6 +63,21 @@ public class AIBotResource {
                 "Erro ao processar documento: " + e.getMessage(),
                 null
             );
+        }
+    }
+
+    @GET
+    @Path("/docs")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Listar documentos", description = "Retorna a lista de documentos salvos no DynamoDB")
+    public Response listarDocumentos() {
+        try {
+            java.util.List<org.acme.aibot.model.Documento> docs = service.listarDocumentos();
+            return Response.ok(docs).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(java.util.Map.of("error", "Erro ao listar documentos: " + e.getMessage()))
+                .build();
         }
     }
 

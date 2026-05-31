@@ -1,40 +1,26 @@
 package org.acme.aibot.service;
 
-import org.acme.users.repository.IUserRepository;
 import org.acme.aibot.dto.UploadDocRequest;
 import org.acme.aibot.dto.UploadDocResponse;
 import org.acme.aibot.model.Documento;
 import org.acme.aibot.repository.DynamoDBAIBotRepository;
-import org.acme.aibot.service.IAIBotService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 
-import org.slf4j.LoggerFactory;
-
-import io.quarkus.runtime.annotations.ConfigDocDefault;
-
 import org.apache.tika.Tika;
-import org.eclipse.microprofile.config.inject.ConfigProperties;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import jakarta.ws.rs.core.Response;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
@@ -70,6 +56,7 @@ public class AIBotService implements IAIBotService {
 
     @Inject 
     DynamoDBAIBotRepository repository;
+    
 
 
     @Override
@@ -181,6 +168,15 @@ public class AIBotService implements IAIBotService {
                     .entity("Erro ao processar documento: " + e.getMessage())
                     .build()
             );
+        }
+    }
+
+    @Override
+    public java.util.List<org.acme.aibot.model.Documento> listarDocumentos() throws WebApplicationException {
+        try {
+            return repository.listarDocumentos();
+        } catch (Exception e) {
+            throw new WebApplicationException("Erro ao listar documentos: " + e.getMessage());
         }
     }
 }
