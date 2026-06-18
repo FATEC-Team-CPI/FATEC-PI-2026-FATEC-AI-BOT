@@ -1,0 +1,6 @@
+fastapi>=0.110,<1
+uvicorn[standard]>=0.29,<1
+python-multipart>=0.0.9,<1
+boto3>=1.34,<2
+httpx>=0.27,<1
+pypdf>=5.0,<6

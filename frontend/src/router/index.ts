@@ -1,8 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { clearStoredToken, getStoredToken, validateStoredToken } from '../services/backendApi'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/',
+      redirect: '/chat',
+    },
     {
       path: '/login',
       name: 'login',
@@ -25,19 +30,19 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('../Views/AdminView.vue'),
-      meta: { transition: 'transition-normal' },
+      meta: { transition: 'transition-normal', requiresAuth: true },
     },
     {
       path: '/usuarios',
       name: 'usuarios',
       component: () => import('../Views/UserListView.vue'),
-      meta: { transition: 'transition-normal' },
+      meta: { transition: 'transition-normal', requiresAuth: true },
     },
     {
       path: '/arquivos',
       name: 'arquivos',
       component: () => import('../Views/FileListView.vue'),
-      meta: { transition: 'transition-normal' },
+      meta: { transition: 'transition-normal', requiresAuth: true },
     },
     {
       path: '/password-reset',
@@ -49,7 +54,7 @@ const router = createRouter({
       path: '/docs',
       name: 'docs',
       component: () => import('../Views/DocSelect.vue'),
-      meta: { transition: 'transition-normal' },
+      meta: { transition: 'transition-normal', requiresAuth: true },
     },
     {
       path: '/chat',
@@ -57,7 +62,38 @@ const router = createRouter({
       component: () => import('../Views/ChatRoom.vue'),
       meta: { transition: 'transition-normal' },
     },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/chat',
+    },
   ],
+})
+
+router.beforeEach(async (to) => {
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth === true)
+
+  if (!requiresAuth) {
+    return true
+  }
+
+  const token = getStoredToken()
+  if (!token) {
+    return {
+      path: '/login',
+      query: { redirect: to.fullPath },
+    }
+  }
+
+  try {
+    await validateStoredToken()
+    return true
+  } catch {
+    clearStoredToken()
+    return {
+      path: '/login',
+      query: { redirect: to.fullPath },
+    }
+  }
 })
 
 export default router

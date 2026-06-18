@@ -50,5 +50,10 @@ public interface IUserService {
     LoginResponse loginProcess(String unidade, String email, String password) throws Exception;
     //comentarios são importantes para documentacao
 
+    /**
+     * Lista todos os administradores/editores
+     */
+    java.util.List<CreateUserResponse> listarAdmins() throws Exception;
+
 }
 

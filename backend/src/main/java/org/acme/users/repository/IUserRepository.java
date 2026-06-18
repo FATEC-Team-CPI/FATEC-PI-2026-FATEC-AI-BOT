@@ -1,6 +1,7 @@
 package org.acme.users.repository;
 
 import java.util.Optional;
+import java.util.List;
 
 import org.acme.users.model.User;
 
@@ -27,6 +28,11 @@ public interface IUserRepository {
      * Util para desenvolvimento/teste com mock
      */
     Optional<User> findByKeys(String pk, String sk) throws Exception;
+
+    /**
+     * Lista usuários por partition key
+     */
+    List<User> findByPartitionKey(String pk) throws Exception;
 
     
 }

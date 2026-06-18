@@ -1,43 +1,51 @@
 <script setup lang="ts">
-type User = {
-  id: number
-  nome: string
-  email: string
-  perfil: string
+import { onMounted, ref } from 'vue'
+import { listAdmins, type UserListItem } from '../services/backendApi'
+
+const admins = ref<UserListItem[]>([])
+const isLoading = ref(false)
+const feedback = ref('')
+const feedbackType = ref<'success' | 'error' | ''>('')
+
+function formatDateTime(value?: string): string {
+  if (!value) {
+    return '-'
+  }
+
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) {
+    return value
+  }
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  }).format(parsed)
 }
 
-const users: User[] = [
-  {
-    id: 1,
-    nome: 'Ana Silva',
-    email: 'ana.silva@fatec.sp.gov.br',
-    perfil: 'Administrador',
-  },
-  {
-    id: 2,
-    nome: 'Bruno Santos',
-    email: 'bruno.santos@fatec.sp.gov.br',
-    perfil: 'Professor',
-  },
-  {
-    id: 3,
-    nome: 'Carla Oliveira',
-    email: 'carla.oliveira@fatec.sp.gov.br',
-    perfil: 'Aluno',
-  },
-  {
-    id: 4,
-    nome: 'Diego Almeida',
-    email: 'diego.almeida@fatec.sp.gov.br',
-    perfil: 'Aluno',
-  },
-  {
-    id: 5,
-    nome: 'Maria Souza',
-    email: 'maria.souza@fatec.sp.gov.br',
-    perfil: 'Aluno',
-  },
-]
+async function loadAdmins(): Promise<void> {
+  isLoading.value = true
+  feedback.value = ''
+  feedbackType.value = ''
+
+  try {
+    admins.value = await listAdmins()
+    feedbackType.value = 'success'
+    feedback.value = admins.value.length
+      ? `${admins.value.length} usuário(s) encontrado(s).`
+      : 'Nenhum usuário encontrado.'
+  } catch (error) {
+    feedbackType.value = 'error'
+    feedback.value = error instanceof Error ? error.message : 'Falha ao listar usuários'
+    admins.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  void loadAdmins()
+})
 </script>
 
 <template>
@@ -46,30 +54,37 @@ const users: User[] = [
   <div class="app-container app-container-bar">
     <section>
       <h1 class="app-title">USUARIOS</h1>
-      <h2 class="app-subtitle sub">Consulte os usuarios cadastrados no sistema</h2>
+      <h2 class="app-subtitle sub">Listagem dos administradores e editores cadastrados</h2>
+    </section>
+
+    <section class="list-actions">
+      <router-link to="/register" class="form-btn list-action-btn">Cadastrar novo usuário</router-link>
     </section>
 
     <section class="users-list">
-      <table v-if="users.length" class="users-table">
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Perfil</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in users" :key="user.id">
-            <td>{{ user.nome }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.perfil }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div v-if="isLoading" class="users-empty">
+        <p>Carregando usuários...</p>
+      </div>
 
-      <div v-else class="users-empty">
-        <h3>Nenhum usuario cadastrado</h3>
-        <p>Quando houver usuarios cadastrados, eles serao exibidos nesta lista.</p>
+      <div v-for="admin in admins" :key="`${admin.email}-${admin.createdAt ?? ''}`" class="users-row">
+        <div class="users-row-main">
+          <h3>{{ admin.name ?? '-' }}</h3>
+          <p>Email: {{ admin.email ?? '-' }}</p>
+          <p>Perfil: {{ admin.role ?? '-' }}</p>
+          <p>Status: {{ admin.status ?? '-' }}</p>
+        </div>
+        <div class="users-row-dates">
+          <p>Criado em: {{ formatDateTime(admin.createdAt) }}</p>
+          <p>Atualizado em: {{ formatDateTime(admin.updatedAt) }}</p>
+        </div>
+      </div>
+
+      <div v-if="!isLoading && !admins.length" class="users-empty">
+        <p>Nenhum usuário encontrado.</p>
+      </div>
+
+      <div v-if="feedback" class="users-empty" :class="feedbackType === 'error' ? 'error' : 'success'">
+        <p>{{ feedback }}</p>
       </div>
     </section>
   </div>
