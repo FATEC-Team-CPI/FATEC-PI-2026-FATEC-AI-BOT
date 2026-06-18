@@ -1,0 +1,109 @@
+version: '3.9'
+
+services:
+  # ============================================================================
+  # LocalStack — Mock de AWS (DynamoDB)
+  # ============================================================================
+  localstack:
+    image: localstack/localstack-pro
+    container_name: fatec-localstack
+    ports:
+      - "4566:4566"
+    env_file: .env
+    environment:
+      - SERVICES=dynamodb
+      - AWS_DEFAULT_REGION=us-east-1
+      - DDB_TABLE_NAME=fatec-ai-bot-core
+      - DDB_SEED_EXAMPLES=true
+      - DEBUG=0
+    volumes:
+      - ./localstack/init/ready.d:/etc/localstack/init/ready.d
+      - localstack-data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD", "bash", "-c", "awslocal dynamodb list-tables --region $$AWS_DEFAULT_REGION >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - fatec-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # MCP Server — Orquestrador de Tools (Vector DB + Documentos)
+  # ============================================================================
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    container_name: fatec-mcp-server
+    ports:
+      - "8001:8001"
+    environment:
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8001
+      - MCP_ENV=production
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./mcp-server/data:/app/data
+    networks:
+      - fatec-network
+    restart: unless-stopped
+    depends_on:
+      - localstack
+
+  # ============================================================================
+  # Quarkus Backend — API + WebSocket + Chat
+  # ============================================================================
+  quarkus-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: fatec-quarkus-backend
+    ports:
+      - "8082:8080"
+    environment:
+      # Groq API
+      - GROQ_API_KEY=${GROQ_API_KEY:-dummy-key}
+      
+      # MCP Server
+      - MCP_SERVER_URL=http://mcp-server:8001
+      
+      # DynamoDB (LocalStack)
+      - QUARKUS_DYNAMODB_ENDPOINT_OVERRIDE=http://localstack:4566
+      - QUARKUS_DYNAMODB_AWS_REGION=us-east-1
+      - QUARKUS_DYNAMODB_AWS_CREDENTIALS_TYPE=static
+      - QUARKUS_DYNAMODB_AWS_CREDENTIALS_STATIC_PROVIDER_ACCESS_KEY_ID=test
+      - QUARKUS_DYNAMODB_AWS_CREDENTIALS_STATIC_PROVIDER_SECRET_ACCESS_KEY=test
+      - QUARKUS_DEVSERVICES_ENABLED=false
+      
+      # Aplicação
+      - QUARKUS_HTTP_PORT=8080
+      - QUARKUS_HTTP_HOST=0.0.0.0
+    volumes:
+      - .:/workspace
+      - maven-cache:/root/.m2
+    networks:
+      - fatec-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    depends_on:
+      localstack:
+        condition: service_healthy
+      mcp-server:
+        condition: service_started
+    stdin_open: true
+    tty: true
+
+volumes:
+  localstack-data:
+  maven-cache:
+
+networks:
+  fatec-network:
+    name: fatec-network
+    driver: bridge

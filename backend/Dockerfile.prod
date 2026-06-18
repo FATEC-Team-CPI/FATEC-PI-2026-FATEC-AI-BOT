@@ -1,0 +1,27 @@
+FROM quay.io/quarkus/ubi9-quarkus-mandrel-builder-image:jdk-25 AS builder
+
+USER root
+RUN microdnf install -y maven && microdnf clean all
+
+WORKDIR /workspace
+
+# Copy build metadata first for better layer cache reuse.
+COPY pom.xml ./
+
+# Copy source and build native executable directly in the builder image.
+COPY src/ src/
+RUN mvn -Pnative -DskipTests package
+
+FROM quay.io/quarkus/ubi9-quarkus-micro-image:2.0
+
+WORKDIR /work/
+RUN chown 1001 /work \
+	&& chmod "g+rwX" /work \
+	&& chown 1001:root /work
+
+COPY --from=builder --chown=1001:root --chmod=0755 /workspace/target/*-runner /work/application
+
+EXPOSE 8080
+USER 1001
+
+ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]

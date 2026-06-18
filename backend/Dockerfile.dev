@@ -1,0 +1,8 @@
+FROM maven:3.9.14-eclipse-temurin-25-alpine
+
+WORKDIR /workspace
+
+EXPOSE 8080 5005
+
+# Source code is mounted as a volume by the Makefile, enabling live reload with quarkus:dev.
+CMD ["mvn", "quarkus:dev", "-Dquarkus.http.host=0.0.0.0", "-DdebugHost=0.0.0.0"]

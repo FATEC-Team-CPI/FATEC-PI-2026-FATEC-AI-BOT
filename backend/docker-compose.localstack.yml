@@ -1,0 +1,30 @@
+services:
+  localstack:
+    image: localstack/localstack:3.8
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=dynamodb
+      - AWS_DEFAULT_REGION=us-east-1
+      - DDB_TABLE_NAME=fatec-ai-bot-core
+      - DDB_SEED_EXAMPLES=true
+      - DEBUG=0
+    volumes:
+      - ./localstack/init/ready.d:/etc/localstack/init/ready.d
+      - localstack-data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD", "bash", "-c", "awslocal dynamodb list-tables --region $$AWS_DEFAULT_REGION >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - fatec-network
+
+volumes:
+  localstack-data:
+
+networks:
+  fatec-network:
+    name: fatec-network
+    external: true
