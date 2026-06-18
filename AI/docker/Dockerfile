@@ -1,25 +1,28 @@
-FROM python:3.7-slim-buster
+# syntax=docker/dockerfile:1.7
+FROM python:3.11-slim-bookworm
 
 ENV LANG=C.UTF-8 \
-  LC_ALL=C.UTF-8 \
-  PATH="${PATH}:/root/.poetry/bin"
+  LC_ALL=C.UTF-8
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
+  build-essential \
   curl \
+  gcc \
   && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml ./
-
-# Install Poetry
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | POETRY_HOME=/opt/poetry python && \
-    cd /usr/local/bin && \
-    ln -s /opt/poetry/bin/poetry && \
-    poetry config virtualenvs.create false
-
-# Allow installing dev dependencies to run tests
-ARG INSTALL_DEV=false
-RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
-
-CMD mkdir -p /workspace
 WORKDIR /workspace
+
+COPY requirements.txt ./
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+  pip install --upgrade pip && \
+  pip install -r requirements.txt
+
+COPY . /workspace
+
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8002
+
+CMD ["uvicorn", "app.main.aibot.model.main:app", "--host", "0.0.0.0", "--port", "8002", "--app-dir", "src"]

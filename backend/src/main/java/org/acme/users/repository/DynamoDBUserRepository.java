@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import org.acme.users.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
@@ -14,6 +15,7 @@ import io.quarkus.elytron.security.common.BcryptUtil;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.List;
 
 
 
@@ -116,5 +118,19 @@ public class DynamoDBUserRepository implements IUserRepository {
         }
         
         return Optional.empty();
+    }
+
+    @Override
+    public List<User> findByPartitionKey(String pk) throws Exception {
+        try {
+            List<User> results = new java.util.ArrayList<>();
+            this.table.query(r -> r.queryConditional(
+                QueryConditional.keyEqualTo(k -> k.partitionValue(pk))
+            )).items().forEach(results::add);
+            return results;
+        } catch (Exception e) {
+            logger.error("Erro ao listar usuários por PK: {}", e.getMessage());
+            throw e;
+        }
     }
 }

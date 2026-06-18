@@ -3,6 +3,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
@@ -12,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import org.acme.aibot.model.Documento;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
 
 
 
@@ -56,4 +59,22 @@ public class DynamoDBAIBotRepository implements IAIBotRepository {
         logger.info("Metadados do documento salvo com sucesso: {}", documento.sk());
     }
     
+    @Override
+    public List<Documento> listarDocumentos() throws WebApplicationException {
+        try {
+            List<Documento> results = new ArrayList<>();
+            String pk = "FatecItaquera#Conteudos";
+            this.table.query(r -> r.queryConditional(
+                QueryConditional.keyEqualTo(k -> k.partitionValue(pk))
+            )).items().forEach(results::add);
+            return results;
+        } catch (Exception e) {
+            logger.error("Erro ao listar documentos: {}", e.getMessage());
+            throw new WebApplicationException(
+                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Erro ao listar documentos: " + e.getMessage())
+                    .build()
+            );
+        }
+    }
 }

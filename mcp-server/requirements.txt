@@ -1,0 +1,38 @@
+# MCP Server Python para FATEC AI Bot
+# Core MCP
+fastmcp==3.0.0
+pydantic>=2.0.0
+
+# Web Framework
+fastapi>=0.100.0
+uvicorn>=0.23.0
+starlette>=0.27.0
+
+# Async
+httpx>=0.24.0
+aiofiles>=23.0.0
+
+# Logging & Monitoring
+python-json-logger>=2.0.7
+
+# Vector DB (escolha uma ou mais conforme necessário)
+# Descomente a que você vai usar:
+
+# ChromaDB (recomendado para começar)
+# chromadb>=0.3.21
+
+# Qdrant (produção)
+# qdrant-client>=2.0.0
+
+# pgvector (PostgreSQL com embeddings)
+# pgvector>=0.2.3
+# psycopg[binary]>=3.1.0
+
+# Embeddings
+# sentence-transformers>=2.2.2
+# openai>=1.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic-settings>=2.0.0
+boto3>=1.26.0

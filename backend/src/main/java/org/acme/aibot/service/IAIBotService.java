@@ -2,6 +2,9 @@ package org.acme.aibot.service;
 
 import org.acme.aibot.dto.UploadDocRequest;
 import org.acme.aibot.dto.UploadDocResponse;
+import org.acme.aibot.model.Documento;
+
+import java.util.List;
 
 import jakarta.ws.rs.WebApplicationException;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
@@ -36,6 +39,11 @@ public interface IAIBotService {
      * @throws IllegalArgumentException 
      */
     UploadDocResponse uploadDetalhesDocumentoNoDB(String fileName, String key) throws WebApplicationException;
+
+    /**
+     * Lista documentos salvos no DynamoDB
+     */
+    List<Documento> listarDocumentos() throws WebApplicationException;
     
     
 

@@ -19,6 +19,8 @@ import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.jwt.build.Jwt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -109,14 +111,14 @@ public class UserService implements IUserService {
         logger.info("Iniciando login para: {}", email);
         
         // Sanitização e Validação
-        String sk = email.trim().toLowerCase();
-        String pk = "Fatec" + unidade.trim() + "#USERS";
+        String normalizedEmail = email.trim().toLowerCase();
+        String normalizedUnit = unidade.trim();
+        String pk = normalizedUnit + "#USERS";
 
-        // Validar se existe no DB usando findByKeys
-        // Optional<User> userOpt = repository.findByKeys(pk, sk);
-        Optional<User> userOpt = repository.findByEmail(email);
+        // Validar se existe no DB usando a chave real da unidade + email
+        Optional<User> userOpt = repository.findByKeys(pk, normalizedEmail);
         if (userOpt.isEmpty()) {
-            logger.warn("Usuário não encontrado para login: {}", email);
+            logger.warn("Usuário não encontrado para login: {} (pk={})", normalizedEmail, pk);
             throw new SecurityException("Inválido");
         }
 
@@ -210,6 +212,12 @@ public class UserService implements IUserService {
             admin.createdAt(),
             admin.updatedAt()
         );
+    }
+
+    @Override
+    public List<CreateUserResponse> listarAdmins() throws Exception {
+        var users = repository.findByPartitionKey("FatecItaquera#USERS");
+        return users.stream().map(this::toCreateUserResponse).collect(Collectors.toList());
     }
 
     
